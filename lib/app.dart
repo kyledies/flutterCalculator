@@ -25,7 +25,7 @@ class StartPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Kalkylator EXP7000', style: TextStyle(fontSize: 35)),
+        title: const Text('Kalkylator EDXP7000', style: TextStyle(fontSize: 35)),
       ),
       body: Center(
         child: CalculatorLayout(),
