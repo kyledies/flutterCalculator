@@ -5,11 +5,13 @@ import 'calc_button.dart';
 class KeyPadLayout extends StatelessWidget {
   final void Function(String) onDigitPressed; // Keypad widget förväntar två funktioner från förälder
   final VoidCallback onClearPressed;
+  final VoidCallback onEqualsPressed;
 
   const KeyPadLayout({
     super.key,
     required this.onDigitPressed, //referens till funktioner från förälder CalculatorLayout sparas i fält onDigitPressed
     required this.onClearPressed,
+    required this.onEqualsPressed,
   });
 /*Knappar byggs mha CalcButton-widget. Varje knapp kopplas till korrekt funktion: 
   CalcButton(
@@ -27,17 +29,17 @@ class KeyPadLayout extends StatelessWidget {
             CalcButton(
               label: 'C',
               textColor: Colors.greenAccent,
-              onPressed: () => onClearPressed, //_onButtonPressed('1') från förälder skickas med
+              onPressed: onClearPressed, //_onButtonPressed('1') från förälder skickas med
             ),
             CalcButton(
-              label: 'm',
+              label: '≤',
               textColor: Colors.greenAccent,
-              onPressed: () => onDigitPressed('m'),
+              onPressed: () => onDigitPressed('≤'),
             ),
             CalcButton(
-              label: '%',
+              label: 'mod',
               textColor: Colors.greenAccent,
-              onPressed: () => onDigitPressed('%'),
+              onPressed: () => onDigitPressed('mod'),
             ),
             CalcButton(
               label: '÷',
@@ -132,13 +134,13 @@ class KeyPadLayout extends StatelessWidget {
               onPressed: () => onDigitPressed(','),
             ),
             CalcButton(
-              label: '±',
-              onPressed: () => onDigitPressed('±'),
+              label: 'eq',
+              onPressed: () => onDigitPressed('=='),
             ),
             CalcButton(
               label: '=',
               textColor: Colors.greenAccent,
-              onPressed: () => onDigitPressed('='),
+              onPressed: onEqualsPressed,
             ),
           ],
         ),
