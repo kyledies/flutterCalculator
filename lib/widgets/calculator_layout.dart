@@ -55,9 +55,9 @@ class CalculatorLayout extends StatefulWidget {
           _history.insert(0, resultString); // Beräkning läggs till ÖVERST i historik
           _lastExpression = expression; // Senaste uttrycket
         });
-      } catch (e) {
+      } catch (e) { //error fångat från operation_helper.dart (rethrow "får hit det")
         setState(() {
-          _displayValue = 'He blev tok...'; // Felmeddelande vid fel
+          _displayValue = 'Error'; // Felmeddelande vid fel
         });
       }
     }
