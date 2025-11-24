@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'calc_button.dart';
 
 class KeyPadLayout extends StatelessWidget {
-  final void Function(String) onDigitPressed; // Keypad widget förväntar två funktioner från förälder
+  final void Function(String) onDigitPressed; // Keypad widget förväntar tre funktioner från förälder
   final VoidCallback onClearPressed;
   final VoidCallback onEqualsPressed;
 
@@ -29,7 +29,7 @@ class KeyPadLayout extends StatelessWidget {
             CalcButton(
               label: 'C',
               textColor: Colors.greenAccent,
-              onPressed: onClearPressed, //_onButtonPressed('1') från förälder skickas med
+              onPressed: onClearPressed, //_onClearPressed från förälder skickas med
             ),
             CalcButton(
               label: '≤',

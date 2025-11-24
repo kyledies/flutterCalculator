@@ -17,7 +17,7 @@ dynamic extractResultFromString(String displayExpression) {
   try {
     final parsedExpression = Expression.parse(expression);
     const evaluator = ExpressionEvaluator();
-    final result = evaluator.eval(parsedExpression, const {});
+    final result = evaluator.eval(parsedExpression, const {});// + 4;
 
     if (result is num) {
       return result;
