@@ -3,65 +3,94 @@ import 'package:flutter_calculator/utils/operation_helper.dart';
 //import 'calc_button.dart'; // importerar knapp-widget
 import 'calculator_display.dart'; //importerar display-widget
 import 'keypad.dart'; // importerar keypad-widget
-
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'dart:math';
 //Stateful widget för att hantera displayens tillstånd genom uppdatering av _displayValue
-class CalculatorLayout extends StatefulWidget { 
+class CalculatorLayout extends StatefulWidget {
   const CalculatorLayout({super.key});
 
   @override
   State<CalculatorLayout> createState() => _CalculatorLayoutState(); //_CalculatorLayoutState hanterar tillståndet
-  }
+}
 
-  /*Nedan - Hanterar tillståndet för displayen.
+/*MIN STATE nedan - Hanterar tillståndet för displayen.
   När knapp trycks (onPressed) uppdateras displayens värde via _onButtonPressed funktion nedan
   setState -> triggar ombyggnad av widget med nytt värde
-
   */
-  class _CalculatorLayoutState extends State<CalculatorLayout> {
-    String _displayValue = '0'; // värde som kan ändras, initialt '0'
-    final List<String> _history = []; //lista för historik 
-    String _lastExpression = ''; //Senaste uttrycket för print i UI
+class _CalculatorLayoutState extends State<CalculatorLayout> {
+  String _displayValue = '0'; // värde som kan ändras, initialt '0'
+  final List<String> _history = []; //lista för historik
+  String _lastExpression = ''; //Senaste uttrycket för print i UI
+  bool _isCalculating = false; //för simulerad väntetid med animering
 
-// referenser onDigitPressed, onClearPressed och onEqualsPressed i keypad pekar mot funktioner nedan
-   
-   // uppdaterar displayvärde genom att addera knappens värde till sträng 
-    void _onButtonPressed(String digit) {
-      setState(() {
-        if (_displayValue == '0') {
-          _displayValue = digit; // Ta bort initiala nollan
-        } else {
+  // referenser onDigitPressed, onClearPressed och onEqualsPressed i keypad pekar mot funktioner nedan
+
+  // uppdaterar displayvärde genom att addera knappens värde till sträng
+  void _onButtonPressed(String digit) {
+    setState(() {
+      if (_displayValue == '0') {
+        _displayValue = digit; // Ta bort initiala nollan
+      } else {
         _displayValue += digit; // Lägg till knappens värde till displayen
-        }
-      });
-    }
-    // Rensar display - Sätter värde i sträng till '0'
-    void _onClearPressed() {
-      setState(() {
-        _displayValue = '0'; // Rensa displayen till noll
-        _lastExpression = ''; //Nollar så uttryck tas bort
-      });
-    }
-
-    //Här evalueras uttryck i display mha operation_helper (expressions-paket)
-    void _onEqualsPressed() {
-      final expression = _displayValue; 
-
-      try {
-        final result = extractResultFromString(expression);
-        final resultString = '$expression = $result';
-
-        setState(() {
-          _displayValue = result.toString(); // Skriver ut resultat i display
-          _history.insert(0, resultString); // Beräkning läggs till ÖVERST i historik
-          _lastExpression = expression; // Senaste uttrycket
-        });
-      } catch (e) { //error fångat från operation_helper.dart (rethrow "får hit det")
-        setState(() {
-          _displayValue = 'Error'; // Felmeddelande vid fel
-        });
       }
+    });
+  }
+
+  // Rensar display - Sätter värde i sträng till '0'
+  void _onClearPressed() {
+    setState(() {
+      _displayValue = '0'; // Rensa displayen till noll
+      _lastExpression = ''; //Nollar så uttryck tas bort
+    });
+  }
+
+  //Här evalueras uttryck i display mha operation_helper (expressions-paket)
+  Future<void> _onEqualsPressed() async {
+    final expression = _displayValue;
+
+    setState(() {
+      _isCalculating = true; //för animering vid beräkning
+    });
+
+    try {
+      // simulerad slumpad väntetid för att köra animering
+       final random = Random();
+      final ms = 900 + random.nextInt(1500);
+      await Future.delayed(Duration(milliseconds: ms));
+
+      final result = extractResultFromString(expression);
+      if (result.toString() == 'Infinity' || result.toString() == '-Infinity') { 
+        setState(() {
+        _displayValue = 'Div med 0!';
+        _lastExpression = expression;
+        // Lägg ev. inte till i historik, eller gör en egen rad
+        _history.insert(0, '>> $expression = DIV/0');
+        });
+        return; // avslut
+      }
+      final resultString = '$expression = $result';
+
+      setState(() {
+        _displayValue = result.toString(); // Skriver ut resultat i display
+        _history.insert(
+          0,
+          '>> $resultString',
+        ); // Beräkning läggs till ÖVERST i historik
+        _lastExpression = expression; // Senaste uttrycket
+      });
+    } catch (e) {
+      //error fångat från operation_helper.dart (rethrow "får hit det")
+      setState(() {
+        _displayValue = 'Error'; // Felmeddelande vid fel
+      });
     }
-  
+    finally {
+      setState(() {
+        _isCalculating = false; //await klar, animering slutar
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -72,52 +101,66 @@ class CalculatorLayout extends StatefulWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF121212),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color.fromARGB(88, 112, 87, 224), width: 3),
+        border: Border.all(color: const Color.fromARGB(87, 1, 1, 4), width: 3),
         boxShadow: const [
           BoxShadow(
             blurRadius: 175,
-            offset: Offset(0,0),
+            offset: Offset(0, 0),
             color: Colors.pinkAccent,
-          )
-        ]
+          ),
+        ],
       ),
 
-      child: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              if (_lastExpression.isNotEmpty)
-              Text(
-                _lastExpression
-                )
-              else 
-                const Text(
-                  'Senaste beräkning'
-                ),
-              CalculatorDisplay(value: _displayValue), //Margin ligger i display-widget
-              KeyPadLayout( //Skickar in callbacks för knapptryckningar: onDigitPressed pekar mot _onButtonPressed o.s.v.
-                onDigitPressed: _onButtonPressed,
-                onClearPressed: _onClearPressed,
-                onEqualsPressed: _onEqualsPressed,
+      child: Stack(
+        children: [
+          //Vanliga vyn
+          SingleChildScrollView(
+            child: Center(
+              child: Column(
+                children: [
+                  if (_lastExpression.isNotEmpty)
+                    Text(_lastExpression)
+                  else
+                    const Text('Senaste beräkning'),
+                  CalculatorDisplay(
+                    value: _displayValue,
+                  ), //Margin ligger i display-widget
+                  KeyPadLayout(
+                    //Skickar in callbacks för knapptryckningar: onDigitPressed pekar mot _onButtonPressed o.s.v.
+                    onDigitPressed: _onButtonPressed,
+                    onClearPressed: _onClearPressed,
+                    onEqualsPressed: _onEqualsPressed,
+                  ),
+                  const SizedBox(height: 8),
+                  //Visar historik nedan
+                  Text(
+                    'Beräkningshistorik:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    //color: Colors.pinkAccent),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _history.join('\n'),
+                    //style: TextStyle(
+                    //  fontWeight: FontWeight.bold,
+                    //  color: Colors.pinkAccent),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              //Visar historik nedan 
-              Text(
-                'Beräkningshistorik:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold),
-                  //color: Colors.pinkAccent),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _history.join('\n'),
-                //style: TextStyle(
-                //  fontWeight: FontWeight.bold,
-                //  color: Colors.pinkAccent),
-                ),
-            ],
+            ),
           ),
-        ),
+          //VID BERÄKNING visas detta
+          if (_isCalculating)
+            Container(
+              color: Colors.black54, // halvtransparent
+              child: Center(
+                child: LoadingAnimationWidget.newtonCradle(
+                  color: Colors.yellowAccent,
+                  size: 260,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -9,11 +9,12 @@ class AppTheme { //Klass för att hantera tema
       fontFamily: 'serif', //std font för light mode
       colorScheme: ColorScheme.fromSeed(
         seedColor: seedColor), //grundfärg för temat
+        brightness: Brightness.light,
       useMaterial3: true,
     );
   }
 
-  // (Valfritt) mörkt tema också, om du vill bygga vidare
+  // (Valfritt) mörkt tema 
   static ThemeData get darkTheme {
     return ThemeData(
       fontFamily: 'monospace', //std font för dark mode
